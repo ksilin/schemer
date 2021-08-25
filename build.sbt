@@ -26,6 +26,7 @@ lazy val schemer =
           library.avroSerializers,
           library.scalaPB,
           library.betterFiles,
+          library.config,
           library.airframeLog,
           library.logback,
           library.scalatest % Test
@@ -48,6 +49,7 @@ lazy val library =
       val avro4s      = "4.0.4"
       val sttp        = "3.3.13"
       val betterFiles = "3.9.1"
+      val config = "1.4.1"
       val airframeLog = "20.12.1"
       val scalatest   = "3.2.0"
       val logback     = "1.2.3"
@@ -69,6 +71,7 @@ lazy val library =
     val avro4sKafka         = "com.sksamuel.avro4s"           %% "avro4s-kafka"                 % Version.avro4s
     val scalaPB             = "com.thesamet.scalapb"          %% "compilerplugin"               % "0.10.8"
     val betterFiles = "com.github.pathikrit" %% "better-files" % Version.betterFiles
+    val config = "com.typesafe" % "config" % Version.config
     val airframeLog         = "org.wvlet.airframe"            %% "airframe-log"                 % Version.airframeLog
     val logback             = "ch.qos.logback"                 % "logback-classic"              % Version.logback
     val scalatest           = "org.scalatest"                 %% "scalatest"                    % Version.scalatest

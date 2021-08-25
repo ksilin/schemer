@@ -12,9 +12,8 @@ import scala.util.Try
 
 class SrRestClientSpec extends SpecBase {
 
-  val srConfig: SrRestConfig = SrRestConfig(srUrl, s"$srKey:$srSecret")
-
-  val client: SrRestClient = SrRestClient(srConfig)
+  val srConfig: SrRestConfig = SrRestConfig(config.srUrl, s"${config.srKey}:${config.srSecret}")
+  val client: SrRestClient   = SrRestClient(srConfig)
 
   "must get all subjects" in {
     val subjects = client.schemaRegistryClient.getAllSubjects.asScala
