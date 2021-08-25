@@ -2,6 +2,14 @@
 
 Welcome to schemer!
 
+## TODOs
+
+* try kafka-serialization wrappers
+
+https://github.com/ovotech/kafka-serialization
+
+* 
+
 ## Contribution policy ##
 
 Contributions via GitHub pull requests are gladly accepted from their original author. Along with
