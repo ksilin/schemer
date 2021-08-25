@@ -1,13 +1,13 @@
 {
   "type": "record",
-  "namespace": "io.confluent.examples.avro",
+  "namespace": "com.examples.schema",
   "name": "AllTypes",
   "fields": [
     {
       "name": "oneof_type",
       "type": [
-        "io.confluent.examples.avro.Customer",
-        "io.confluent.examples.avro.Product"
+        "com.examples.schema.Customer",
+        "com.examples.schema.Product"
       ]
     }
   ]

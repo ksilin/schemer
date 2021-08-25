@@ -1,6 +1,6 @@
 {
   "type": "record",
-  "namespace": "io.confluent.examples.avro",
+  "namespace": "com.examples.schema",
   "name": "Customer",
 
   "fields": [

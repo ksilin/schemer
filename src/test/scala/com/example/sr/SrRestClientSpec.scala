@@ -30,8 +30,6 @@ class SrRestClientSpec extends SpecBase {
     }
     res mustBe a[Right[String, Int]]
 
-    // now fetch the schema and compare:
-
     res.map { schemaId =>
       val schema: Try[ParsedSchema] = Try(client.schemaRegistryClient.getSchemaById(schemaId))
       println(s"found schema with ID $schemaId:")
@@ -40,6 +38,13 @@ class SrRestClientSpec extends SpecBase {
   }
 
   "must register a schema with references" in {
+
+    Try(client.schemaRegistryClient.deleteSubject("union-srtest", false))
+    Try(client.schemaRegistryClient.deleteSubject("union-srtest", true))
+    Try(client.schemaRegistryClient.deleteSubject("customer", false))
+    Try(client.schemaRegistryClient.deleteSubject("customer", true))
+    Try(client.schemaRegistryClient.deleteSubject("product", false))
+    Try(client.schemaRegistryClient.deleteSubject("product", true))
 
     val customerSchemaPath = "avro/Customer.avsc"
     val customerSchema: Either[String, String] =
@@ -62,17 +67,22 @@ class SrRestClientSpec extends SpecBase {
     //org.apache.avro.SchemaParseException: Undefined name: "io.confluent.examples.avro.Customer"
 
     val references = List(
-      new SchemaReference("io.confluent.examples.avro.Customer", "customer", 1),
-      new SchemaReference("io.confluent.examples.avro.Product", "product", 1)
+      new SchemaReference("com.examples.schema.Customer", "customer", 1),
+      new SchemaReference("com.examples.schema.Product", "product", 1)
     )
 
     val unionSchemaPath = "avro/AllOf.avsc"
     val unionSchema: Either[String, String] =
       Resource.asString(unionSchemaPath).toRight(s"failed to read schema $unionSchemaPath")
     val unionSchemaRegistered: Either[String, Int] = unionSchema.flatMap { schemaString =>
-      client.register("union-srtest", schemaString, references = references)
+      client.register("avroRefSpec-value", schemaString, references = references)
     }
     unionSchemaRegistered mustBe a[Right[String, Int]]
+    unionSchemaRegistered.map { schemaId =>
+      val schema: Try[ParsedSchema] = Try(client.schemaRegistryClient.getSchemaById(schemaId))
+      println(s"found union schema with ID $schemaId:")
+      println(schema)
+    }
   }
 
 }

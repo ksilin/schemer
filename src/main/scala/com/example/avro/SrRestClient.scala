@@ -1,16 +1,13 @@
 package com.example.avro
 
 import io.circe
-import circe.generic.auto._
 import io.confluent.kafka.schemaregistry.{ AbstractSchemaProvider, ParsedSchema, SchemaProvider }
-import sttp.model.{ Header, HeaderNames, Headers, MediaType, Uri }
 import io.confluent.kafka.schemaregistry.avro.{ AvroSchema, AvroSchemaProvider }
 import io.confluent.kafka.schemaregistry.client.{
   CachedSchemaRegistryClient,
   SchemaRegistryClient,
   SchemaRegistryClientConfig
 }
-import io.confluent.kafka.schemaregistry.client.rest.RestService
 import io.confluent.kafka.schemaregistry.client.rest.entities.SchemaReference
 import io.confluent.kafka.schemaregistry.json.JsonSchemaProvider
 import io.confluent.kafka.schemaregistry.protobuf.ProtobufSchemaProvider
@@ -19,7 +16,6 @@ import wvlet.log.LogSupport
 
 import java.util
 import scala.jdk.CollectionConverters._
-import java.util.Optional
 import scala.jdk.OptionConverters.RichOptional
 import scala.util.Try
 
