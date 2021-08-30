@@ -112,4 +112,4 @@ Compile / PB.targets := Seq(
 
 Compile / avroSourceDirectories += (Compile / resourceDirectory).value / "avro"
 Compile / avroSpecificSourceDirectories += (Compile / resourceDirectory).value / "avro"
-Compile / sourceGenerators += (Compile / avroScalaGenerate).taskValue
+Compile / sourceGenerators += (Compile / avroScalaGenerateSpecific).taskValue

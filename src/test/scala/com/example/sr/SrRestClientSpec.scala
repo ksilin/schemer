@@ -71,7 +71,7 @@ class SrRestClientSpec extends SpecBase {
       new SchemaReference("com.examples.schema.Product", "product", 1)
     )
 
-    val unionSchemaPath = "avro/AllOf.avsc"
+    val unionSchemaPath = "tmp/AllOf.avsc"
     val unionSchema: Either[String, String] =
       Resource.asString(unionSchemaPath).toRight(s"failed to read schema $unionSchemaPath")
     val unionSchemaRegistered: Either[String, Int] = unionSchema.flatMap { schemaString =>

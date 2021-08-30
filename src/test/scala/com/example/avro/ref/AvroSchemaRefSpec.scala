@@ -1,10 +1,9 @@
 package com.example.avro.ref
 
 import better.files.Resource
-import com.example.avro.{ SrRestClient, SrRestConfig }
+import com.example.avro.{ AllTypes, SrRestClient, SrRestConfig }
 import com.example.{ KafkaSpecHelper, SpecBase }
-import com.examples.schema.{ AllTypes, Product }
-import io.confluent.kafka.schemaregistry.ParsedSchema
+import com.examples.schema.{ Customer, Product }
 import io.confluent.kafka.schemaregistry.client.rest.entities.SchemaReference
 import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig
 import org.apache.avro.Schema
@@ -88,9 +87,12 @@ class AvroSchemaRefSpec extends SpecBase {
       new SchemaReference("com.examples.schema.Product", "product", 1)
     )
 
-    val unionSchemaPath = "avro/AllOf.avsc"
+    // val unionSchemaPath = "com/example/avro/AllOf.avsc"
+    val unionSchemaPath                   = "tmp/AllOf.avsc"
+    val maybeSchemaString: Option[String] = Resource.asString(unionSchemaPath)
+
     val unionSchema: Either[String, String] =
-      Resource.asString(unionSchemaPath).toRight(s"failed to read schema $unionSchemaPath")
+      maybeSchemaString.toRight(s"failed to read schema $unionSchemaPath")
     val unionSchemaRegistered: Either[String, Int] = unionSchema.flatMap { schemaString =>
       srClient.register("avroRefSpec-value", schemaString, references = references)
     }
@@ -105,19 +107,37 @@ class AvroSchemaRefSpec extends SpecBase {
 
     consumer.subscribe(List(topicName).asJava)
 
-    val product = Product(product_id = 1, product_name = "myProduct", product_price = 12.99)
-    val builder = new GenericRecordBuilder(schema)
-    builder.set("oneof_type", product)
-    val rec: GenericData.Record = builder.build()
+    val product                 = Product(product_id = 1, product_name = "myProduct", product_price = 12.99)
+    val oneOfWithProductBuilder = new GenericRecordBuilder(schema)
+    oneOfWithProductBuilder.set("oneof_type", product)
+    val productRecord: GenericData.Record = oneOfWithProductBuilder.build()
 
     // val value   = AllTypes(Right(product))
     // val record = new ProducerRecord[String, AllTypes](topicName, "testKey", value)
-    val record = new ProducerRecord[String, GenericRecord](topicName, "testKey", rec)
+    val productProducerRecord =
+      new ProducerRecord[String, GenericRecord](topicName, "productKey", productRecord)
 
-    // producer.send(record)
     // ERROR: Unknown datum type com.examples.schema.Product: Product(1,myProduct,12.99)
-    val sent: RecordMetadata = producer.send(record).get()
-    println(sent)
+    val sent1: RecordMetadata = producer.send(productProducerRecord).get()
+    println(sent1)
+
+    val customer = Customer(
+      customer_id = 1,
+      customer_name = "Kun De",
+      customer_email = "kunde@mailinator.com",
+      customer_address = "Fake Street 123"
+    )
+    val oneOfWithCustomerBuilder = new GenericRecordBuilder(schema)
+    oneOfWithCustomerBuilder.set("oneof_type", customer)
+    val customerRecord: GenericData.Record = oneOfWithCustomerBuilder.build()
+
+    val customerProducerRecord =
+      new ProducerRecord[String, GenericRecord](topicName, "customerKey", customerRecord)
+
+    // ERROR: Unknown datum type com.examples.schema.Product: Product(1,myProduct,12.99)
+    val sent2: RecordMetadata = producer.send(customerProducerRecord).get()
+    println(sent2)
+
     producer.close()
 
     val records: Iterable[ConsumerRecord[String, GenericRecord]] =

@@ -1,5 +1,8 @@
 package com.example
 
+import com.examples.schema.Customer
+import com.examples.schema.Product
+
 package object avro {
 
   case class SimpleTestData(id: Int, data: String)
@@ -17,6 +20,6 @@ package object avro {
 //  )
 //
 //  // Either wirks with two options, what about more?
-//  final case class AllTypes(oneof_type: Either[Customer, Product])
+  final case class AllTypes(oneof_type: Either[Customer, Product])
 
 }
