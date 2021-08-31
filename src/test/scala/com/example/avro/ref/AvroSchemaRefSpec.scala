@@ -1,6 +1,5 @@
 package com.example.avro.ref
 
-import better.files.Resource
 import com.example.avro.{ AllTypes, SrRestClient, SrRestConfig }
 import com.example.{ KafkaSpecHelper, SpecBase }
 import com.examples.schema.{ Customer, Product }
@@ -17,12 +16,21 @@ import org.apache.kafka.clients.producer.{
   RecordMetadata
 }
 
-import java.util
 import java.util.Properties
-import scala.collection.mutable
-import scala.jdk.CollectionConverters.{ ListHasAsScala, SeqHasAsJava }
+import scala.jdk.CollectionConverters._
 
 class AvroSchemaRefSpec extends SpecBase {
+
+  val customerSchemaPath = "avro/Customer.avsc"
+  val productSchemaPath  = "avro/Product.avsc"
+
+  // avrohugger cannot generate a SpecificRecord for the AllOF type and fails,
+  // so moving out of generator path to let it work on th rest
+  val allOfSchemaPath = "tmp/AllOf.avsc"
+
+  val productSubject  = s"product-$suiteName"
+  val customerSubject = s"customer-$suiteName"
+  //val allOfSubject    = s"allOf-$suiteName"
 
   val props: Properties = config.commonProps.clone().asInstanceOf[Properties]
 
@@ -71,63 +79,55 @@ class AvroSchemaRefSpec extends SpecBase {
   val srConfig: SrRestConfig = SrRestConfig(config.srUrl, s"${config.srKey}:${config.srSecret}")
   val srClient: SrRestClient = SrRestClient(srConfig)
 
+  val product: Product = Product(product_id = 1, product_name = "myProduct", product_price = 12.99)
+  val customer: Customer = Customer(
+    customer_id = 1,
+    customer_name = "Kun De",
+    customer_email = "kunde@mailinator.com",
+    customer_address = "Fake Street 123"
+  )
+
   "must write and read avro with references" in {
 
-    val topicName = "avroRefSpec"
+    // TODO: show how naming strategies work in resolving the subject name
+    val topicName   = suiteName
+    val subjectName = s"$topicName-value"
+
+    prepSchemas(List(customerSubject, productSubject, subjectName))
+
     KafkaSpecHelper.createOrTruncateTopic(adminClient, topicName)
 
-    val prefix = "avroRefSpec"
-//    val schemas: List[ParsedSchema] = srClient.schemaRegistryClient
-//      .getSchemas(prefix, false, true)
-//      .asScala
-//      .toList
-
     val references = List(
-      new SchemaReference("com.examples.schema.Customer", "customer", 1),
-      new SchemaReference("com.examples.schema.Product", "product", 1)
+      new SchemaReference("com.examples.schema.Customer", customerSubject, 1),
+      new SchemaReference("com.examples.schema.Product", productSubject, 1)
     )
 
-    // val unionSchemaPath = "com/example/avro/AllOf.avsc"
-    val unionSchemaPath                   = "tmp/AllOf.avsc"
-    val maybeSchemaString: Option[String] = Resource.asString(unionSchemaPath)
-
-    val unionSchema: Either[String, String] =
-      maybeSchemaString.toRight(s"failed to read schema $unionSchemaPath")
-    val unionSchemaRegistered: Either[String, Int] = unionSchema.flatMap { schemaString =>
-      srClient.register("avroRefSpec-value", schemaString, references = references)
-    }
+    val unionSchemaRegistered: Either[String, Int] =
+      srClient.registerSchemaFromResource(
+        allOfSchemaPath,
+        subjectName,
+        references
+      ) //allOfSubject, references)
     val id = unionSchemaRegistered.right.get
 
-    val schema: Schema = srClient.schemaRegistryClient.getById(id)
-    println("schema fields:")
-    schema.getFields.asScala foreach println
-
-//    schemas.size mustBe 1
-//    val schema: ParsedSchema = schemas.head
+    // TODO - how can I get a schema without fetching from SR?
+    val allOfSchema: Schema = srClient.schemaRegistryClient.getById(id)
 
     consumer.subscribe(List(topicName).asJava)
 
-    val product                 = Product(product_id = 1, product_name = "myProduct", product_price = 12.99)
-    val oneOfWithProductBuilder = new GenericRecordBuilder(schema)
+    val oneOfWithProductBuilder = new GenericRecordBuilder(allOfSchema)
     oneOfWithProductBuilder.set("oneof_type", product)
-    val productRecord: GenericData.Record = oneOfWithProductBuilder.build()
-
-    // val value   = AllTypes(Right(product))
-    // val record = new ProducerRecord[String, AllTypes](topicName, "testKey", value)
     val productProducerRecord =
-      new ProducerRecord[String, GenericRecord](topicName, "productKey", productRecord)
+      new ProducerRecord[String, GenericRecord](
+        topicName,
+        "productKey",
+        oneOfWithProductBuilder.build()
+      )
 
     // ERROR: Unknown datum type com.examples.schema.Product: Product(1,myProduct,12.99)
     val sent1: RecordMetadata = producer.send(productProducerRecord).get()
-    println(sent1)
 
-    val customer = Customer(
-      customer_id = 1,
-      customer_name = "Kun De",
-      customer_email = "kunde@mailinator.com",
-      customer_address = "Fake Street 123"
-    )
-    val oneOfWithCustomerBuilder = new GenericRecordBuilder(schema)
+    val oneOfWithCustomerBuilder = new GenericRecordBuilder(allOfSchema)
     oneOfWithCustomerBuilder.set("oneof_type", customer)
     val customerRecord: GenericData.Record = oneOfWithCustomerBuilder.build()
 
@@ -136,13 +136,23 @@ class AvroSchemaRefSpec extends SpecBase {
 
     // ERROR: Unknown datum type com.examples.schema.Product: Product(1,myProduct,12.99)
     val sent2: RecordMetadata = producer.send(customerProducerRecord).get()
-    println(sent2)
-
     producer.close()
 
     val records: Iterable[ConsumerRecord[String, GenericRecord]] =
       KafkaSpecHelper.fetchAndProcessRecords(consumer)
 
+    records.size mustBe 2
   }
 
+  private def prepSchemas(schemasToDelete: List[String]) = {
+    srClient.deleteSubjects(schemasToDelete)
+
+    val customerSchemaRegistered: Either[String, Int] =
+      srClient.registerSchemaFromResource(customerSchemaPath, customerSubject)
+    customerSchemaRegistered mustBe a[Right[String, Int]]
+
+    val productSchemaRegistered: Either[String, Int] =
+      srClient.registerSchemaFromResource(productSchemaPath, productSubject)
+    productSchemaRegistered mustBe a[Right[String, Int]]
+  }
 }

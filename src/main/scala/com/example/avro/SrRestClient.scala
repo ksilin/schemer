@@ -1,5 +1,6 @@
 package com.example.avro
 
+import better.files.Resource
 import io.circe
 import io.confluent.kafka.schemaregistry.{ AbstractSchemaProvider, ParsedSchema, SchemaProvider }
 import io.confluent.kafka.schemaregistry.avro.{ AvroSchema, AvroSchemaProvider }
@@ -57,6 +58,30 @@ case class SrRestClient(config: SrRestConfig) extends LogSupport {
       }.toEither.left.map(e => e.getMessage)
     }
     res
+  }
+
+  // https://docs.confluent.io/platform/current/schema-registry/schema-deletion-guidelines.html#hard-delete-schema
+  def deleteSubjects(subjects: List[String]): Map[String, Either[Throwable, util.List[Integer]]] =
+    subjects.map { s =>
+      s -> deleteSubject(s)
+    }.toMap
+
+  def deleteSubject(subject: String): Either[Throwable, util.List[Integer]] =
+    Try(schemaRegistryClient.deleteSubject(subject, false)).flatMap { _ =>
+      Try(schemaRegistryClient.deleteSubject(subject, true))
+    }.toEither
+
+  def registerSchemaFromResource(
+      resourcePath: String,
+      subject: String,
+      references: List[SchemaReference] = Nil
+  ): Either[String, Int] = {
+    val schemaOrError: Either[String, String] =
+      Resource.asString(resourcePath).toRight(s"failed to read schema $resourcePath")
+    val schemaRegistered: Either[String, Int] = schemaOrError.flatMap { schemaString =>
+      register(subject, schemaString, references = references)
+    }
+    schemaRegistered
   }
 
   // schemaRegistryClient.register(subjectName, parsedSchema)
