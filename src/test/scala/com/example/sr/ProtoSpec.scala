@@ -17,37 +17,17 @@ import scala.jdk.CollectionConverters._
 
 class ProtoSpec extends SpecBase {
 
-  val props: Properties = config.commonProps.clone().asInstanceOf[Properties]
-  props.put(
-    ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
-    "org.apache.kafka.common.serialization.StringSerializer"
-  )
-  props.put(
+  val protoProps: Properties = props.clone().asInstanceOf[Properties]
+  protoProps.put(
     ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
     "io.confluent.kafka.serializers.protobuf.KafkaProtobufSerializer"
   )
-
-  props.put(
-    ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
-    "org.apache.kafka.common.serialization.StringDeserializer"
-  )
-  props.put(
+  protoProps.put(
     ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
     "io.confluent.kafka.serializers.protobuf.KafkaProtobufDeserializer"
   )
-
-  props.put(
-    ConsumerConfig.GROUP_ID_CONFIG,
-    s"$suiteName-group"
-  )
-
-  props.put(
-    ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,
-    "earliest"
-  )
-
-  val producer: Producer[String, MyRecord] = new KafkaProducer[String, MyRecord](props)
-  val consumer: Consumer[String, MyRecord] = new KafkaConsumer[String, MyRecord](props)
+  val producer: Producer[String, MyRecord] = new KafkaProducer[String, MyRecord](protoProps)
+  val consumer: Consumer[String, MyRecord] = new KafkaConsumer[String, MyRecord](protoProps)
   val otherRecord: OtherRecord             = OtherRecord.newBuilder().setOtherId(123).build()
   val myrecord: MyRecord                   = MyRecord.newBuilder().setF1("value1").setF2(otherRecord).build()
 

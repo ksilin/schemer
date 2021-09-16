@@ -1,0 +1,15 @@
+{
+  "type": "record",
+  "namespace": "com.examples.schema",
+  "name": "Order",
+  "fields": [
+    {
+      "name": "customer",
+      "type": "com.examples.schema.Customer"
+    },
+    {
+      "name": "product",
+      "type": "com.examples.schema.Product"
+    }
+  ]
+}

@@ -1,25 +1,19 @@
 package com.example.avro.ref
 
-import com.example.avro.{ AllTypes, SrRestClient, SrRestConfig }
-import com.example.{ KafkaSpecHelper, SpecBase }
+import com.example.avro.AllTypes
+import com.example.{ KafkaSpecHelper, LocalSchemaCoordinates, SpecBase }
 import com.examples.schema.{ Customer, Product }
 import io.confluent.kafka.schemaregistry.client.rest.entities.SchemaReference
-import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig
 import org.apache.avro.Schema
 import org.apache.avro.generic.{ GenericData, GenericRecord, GenericRecordBuilder }
-import org.apache.kafka.clients.consumer.{ Consumer, ConsumerConfig, ConsumerRecord, KafkaConsumer }
-import org.apache.kafka.clients.producer.{
-  KafkaProducer,
-  Producer,
-  ProducerConfig,
-  ProducerRecord,
-  RecordMetadata
-}
+import org.apache.kafka.clients.consumer.{ Consumer, ConsumerRecord, KafkaConsumer }
+import org.apache.kafka.clients.producer.{ KafkaProducer, Producer, ProducerRecord, RecordMetadata }
 
-import java.util.Properties
 import scala.jdk.CollectionConverters._
 
-class AvroSchemaRefSpec extends SpecBase {
+class AvroSchemaSumTypeSpec extends SpecBase {
+
+  val topicName: String = suiteName
 
   val customerSchemaPath = "avro/Customer.avsc"
   val productSchemaPath  = "avro/Product.avsc"
@@ -30,54 +24,19 @@ class AvroSchemaRefSpec extends SpecBase {
 
   val productSubject  = s"product-$suiteName"
   val customerSubject = s"customer-$suiteName"
+  // TODO: show how naming strategies work in resolving the subject name
+  val subjectName = s"$topicName-value"
   //val allOfSubject    = s"allOf-$suiteName"
 
-  val props: Properties = config.commonProps.clone().asInstanceOf[Properties]
-
-  props.put(AbstractKafkaSchemaSerDeConfig.AUTO_REGISTER_SCHEMAS, false)
-  // without it, the event type is looked up in the subject and fails
-  props.put(AbstractKafkaSchemaSerDeConfig.USE_LATEST_VERSION, true)
-
-  props.put(
-    ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
-    "org.apache.kafka.common.serialization.StringSerializer"
-  )
-  props.put(
-    ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
-    "io.confluent.kafka.serializers.KafkaAvroSerializer"
-  )
-
-//  props.put(
-//    AbstractKafkaSchemaSerDeConfig.VALUE_SCHEMA_ID,
-//    "io.confluent.kafka.serializers.KafkaAvroSerializer"
-//  )
-
-  props.put(
-    ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
-    "org.apache.kafka.common.serialization.StringDeserializer"
-  )
-  props.put(
-    ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
-    "io.confluent.kafka.serializers.KafkaAvroDeserializer"
-  )
-
-  props.put(
-    ConsumerConfig.GROUP_ID_CONFIG,
-    s"$suiteName-group"
-  )
-
-  props.put(
-    ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,
-    "earliest"
-  )
+  val customerSchemaCoord = LocalSchemaCoordinates(customerSchemaPath, customerSubject)
+  val productSchemaCoord  = LocalSchemaCoordinates(productSchemaPath, productSubject)
+  val allOfSchemaCoord    = LocalSchemaCoordinates(allOfSchemaPath, subjectName)
+  val schemasToDelete     = List(customerSchemaCoord, productSchemaCoord, allOfSchemaCoord)
+  val schemasToRegister   = List(customerSchemaCoord, productSchemaCoord)
 
   val producerAllTypes: Producer[String, AllTypes] = new KafkaProducer[String, AllTypes](props)
   val producer: Producer[String, GenericRecord]    = new KafkaProducer[String, GenericRecord](props)
-  //val consumer: Consumer[String, AllTypes] = new KafkaConsumer[String, AllTypes](props)
-  val consumer: Consumer[String, GenericRecord] = new KafkaConsumer[String, GenericRecord](props)
-
-  val srConfig: SrRestConfig = SrRestConfig(config.srUrl, s"${config.srKey}:${config.srSecret}")
-  val srClient: SrRestClient = SrRestClient(srConfig)
+  val consumer: Consumer[String, GenericRecord]    = new KafkaConsumer[String, GenericRecord](props)
 
   val product: Product = Product(product_id = 1, product_name = "myProduct", product_price = 12.99)
   val customer: Customer = Customer(
@@ -89,12 +48,7 @@ class AvroSchemaRefSpec extends SpecBase {
 
   "must write and read avro with references" in {
 
-    // TODO: show how naming strategies work in resolving the subject name
-    val topicName   = suiteName
-    val subjectName = s"$topicName-value"
-
-    prepSchemas(List(customerSubject, productSubject, subjectName))
-
+    prepSchemas(schemasToDelete, schemasToRegister)
     KafkaSpecHelper.createOrTruncateTopic(adminClient, topicName)
 
     val references = List(
@@ -144,15 +98,4 @@ class AvroSchemaRefSpec extends SpecBase {
     records.size mustBe 2
   }
 
-  private def prepSchemas(schemasToDelete: List[String]) = {
-    srClient.deleteSubjects(schemasToDelete)
-
-    val customerSchemaRegistered: Either[String, Int] =
-      srClient.registerSchemaFromResource(customerSchemaPath, customerSubject)
-    customerSchemaRegistered mustBe a[Right[String, Int]]
-
-    val productSchemaRegistered: Either[String, Int] =
-      srClient.registerSchemaFromResource(productSchemaPath, productSubject)
-    productSchemaRegistered mustBe a[Right[String, Int]]
-  }
 }
