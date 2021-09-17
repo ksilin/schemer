@@ -16,7 +16,7 @@ class SrRestClientSpec extends SpecBase {
 
   // avrohugger cannot generate a SpecificRecord for the AllOF type and fails,
   // so moving out of generator path to let it work on th rest
-  val allOfSchemaPath = "tmp/AllOf.avsc"
+  val allOfSchemaPath = "manual_avro/CustomerOrProduct.avsc"
 
   val productSubject  = s"product-$suiteName"
   val customerSubject = s"customer-$suiteName"

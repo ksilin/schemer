@@ -20,6 +20,6 @@ package object avro {
 //  )
 //
 //  // Either wirks with two options, what about more?
-  final case class AllTypes(oneof_type: Either[Customer, Product])
+  final case class CustomerOrProductCase(customerOrProduct: Either[Customer, Product])
 
 }

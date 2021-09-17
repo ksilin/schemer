@@ -1,10 +1,10 @@
 {
   "type": "record",
   "namespace": "com.examples.schema",
-  "name": "AllTypes",
+  "name": "CustomerOrProduct",
   "fields": [
     {
-      "name": "oneof_type",
+      "name": "customerOrProduct",
       "type": [
         "com.examples.schema.Customer",
         "com.examples.schema.Product"

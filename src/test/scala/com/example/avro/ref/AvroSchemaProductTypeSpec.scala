@@ -3,12 +3,25 @@ package com.example.avro.ref
 import com.example.{ KafkaSpecHelper, LocalSchemaCoordinates, SpecBase }
 import com.examples.schema.{ Customer, Order, Product }
 import io.confluent.kafka.schemaregistry.client.rest.entities.SchemaReference
+import org.apache.avro.Schema
 import org.apache.kafka.clients.consumer.{ Consumer, ConsumerRecord, KafkaConsumer }
 import org.apache.kafka.clients.producer._
 
 import scala.jdk.CollectionConverters._
 
 class AvroSchemaProductTypeSpec extends SpecBase {
+
+  // avrohugger inlines the referenced schemas
+  // object Order {
+  //  val SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"Order\",\"namespace\":\"com.examples.schema\",\"fields\":[{\"name\":\"customer\",\"type\":{\"type\":\"record\",\"name\":\"Customer\",\"fields\":[{\"name\":\"customer_id\",\"type\":\"int\"},{\"name\":\"customer_name\",\"type\":\"string\"},{\"name\":\"customer_email\",\"type\":\"string\"},{\"name\":\"customer_address\",\"type\":\"string\"}]}},{\"name\":\"product\",\"type\":{\"type\":\"record\",\"name\":\"Product\",\"fields\":[{\"name\":\"product_id\",\"type\":\"int\"},{\"name\":\"product_name\",\"type\":\"string\"},{\"name\":\"product_price\",\"type\":\"double\"}]}}]}")
+  // }
+
+  // replacing teh schema by a non-inlined one does not work:
+  // val SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"namespace\":\"com.examples.schema\",\"name\":\"Order\",\"fields\":[{\"name\":\"customer\",\"type\":\"com.examples.schema.Customer\"},{\"name\":\"product\",\"type\":\"com.examples.schema.Product\"}]}")
+  // java.lang.ExceptionInInitializerError
+  //	at com.examples.schema.Order.getSchema(Order.scala:31)
+  // ...
+  // Caused by: org.apache.avro.SchemaParseException: "com.examples.schema.Customer" is not a defined name. The type of the "customer" field must be a defined name or a {"type": ...} expression.
 
   // TODO: show how naming strategies work in resolving the subject name
   val topicName: String = suiteName
@@ -57,6 +70,11 @@ class AvroSchemaProductTypeSpec extends SpecBase {
       references
     )
     orderSchemaRegistered mustBe a[Right[String, Int]]
+
+    val id                  = orderSchemaRegistered.right.get
+    val orderSchema: Schema = srClient.schemaRegistryClient.getById(id)
+    info("order schema from SR: ")
+    info(orderSchema)
 
     val productProducerRecord = new ProducerRecord[String, Order](topicName, "orderKey", order)
 
