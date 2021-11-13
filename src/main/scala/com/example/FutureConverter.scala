@@ -1,9 +1,9 @@
 package com.example
 
-trait FutureConverter {
+import scala.concurrent.{ Future, Promise }
+import scala.util.Try
 
-  import scala.concurrent.{ Future, Promise }
-  import scala.util.Try
+trait FutureConverter {
 
   implicit class FutureConverter[T](jFuture: java.util.concurrent.Future[T]) {
 
@@ -16,7 +16,5 @@ trait FutureConverter {
       ).start()
       promise.future
     }
-
   }
-
 }

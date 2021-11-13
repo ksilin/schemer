@@ -1,7 +1,7 @@
 package com.example.avro.ref
 
 import com.example.avro.CustomerOrProductCase
-import com.example.{ KafkaSpecHelper, LocalSchemaCoordinates, SpecBase }
+import com.example.{ KafkaSpecHelper, LocalSchemaCoordinates, SRBase, SpecBase }
 import com.examples.schema.{ Customer, Product }
 import io.confluent.kafka.schemaregistry.client.rest.entities.SchemaReference
 import org.apache.avro.Schema
@@ -11,7 +11,7 @@ import org.apache.kafka.clients.producer.{ KafkaProducer, Producer, ProducerReco
 
 import scala.jdk.CollectionConverters._
 
-class AvroSchemaSumTypeGenericRecordSpec extends SpecBase {
+class AvroSchemaSumTypeGenericRecordSpec extends SpecBase with SRBase {
 
   val topicName: String = suiteName
 
@@ -20,7 +20,7 @@ class AvroSchemaSumTypeGenericRecordSpec extends SpecBase {
 
   // avrohugger cannot generate a SpecificRecord for the AllOF type and fails,
   // so moving out of generator path to let it work on th rest
-  val customerOrProductSchemaPath = "manual_avro/CustomerOrProduct.avsc"
+  val customerOrProductSchemaPath       = "manual_avro/CustomerOrProduct.avsc"
   val customerOrProductInlineSchemaPath = "manual_avro/CustomerOrProductInline.avsc"
 
   val productSubject  = s"product-$suiteName"
@@ -68,7 +68,7 @@ class AvroSchemaSumTypeGenericRecordSpec extends SpecBase {
         references
       ) //allOfSubject, references)
 
-    val id                    = sumTypeSchemaRegistered.right.get
+    val id                    = sumTypeSchemaRegistered.getOrElse(-1)
     val sumTypeSchema: Schema = srClient.schemaRegistryClient.getById(id)
 
     println("customerOrProduct Schema: ")

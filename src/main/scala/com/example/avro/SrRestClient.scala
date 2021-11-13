@@ -1,18 +1,13 @@
 package com.example.avro
 
 import better.files.Resource
-import io.circe
-import io.confluent.kafka.schemaregistry.{ AbstractSchemaProvider, ParsedSchema, SchemaProvider }
+import com.example.SrRestProps
+import io.confluent.kafka.schemaregistry.{ ParsedSchema, SchemaProvider }
 import io.confluent.kafka.schemaregistry.avro.{ AvroSchema, AvroSchemaProvider }
-import io.confluent.kafka.schemaregistry.client.{
-  CachedSchemaRegistryClient,
-  SchemaRegistryClient,
-  SchemaRegistryClientConfig
-}
+import io.confluent.kafka.schemaregistry.client.{ CachedSchemaRegistryClient, SchemaRegistryClient }
 import io.confluent.kafka.schemaregistry.client.rest.entities.SchemaReference
 import io.confluent.kafka.schemaregistry.json.JsonSchemaProvider
 import io.confluent.kafka.schemaregistry.protobuf.ProtobufSchemaProvider
-import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig
 import wvlet.log.LogSupport
 
 import java.util
@@ -20,24 +15,15 @@ import scala.jdk.CollectionConverters._
 import scala.jdk.OptionConverters.RichOptional
 import scala.util.Try
 
-case class SrRestConfig(url: String, credentials: String) {
-
-  val asMap = Map(
-    AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG -> url,
-    SchemaRegistryClientConfig.BASIC_AUTH_CREDENTIALS_SOURCE  -> "USER_INFO",
-    SchemaRegistryClientConfig.USER_INFO_CONFIG               -> credentials
-  )
-}
-
-case class SrRestClient(config: SrRestConfig) extends LogSupport {
+case class SrRestClient(config: SrRestProps) extends LogSupport {
   import com.example.avro.SrRestClient._
 
   val schemaRegistryClient: SchemaRegistryClient =
     new CachedSchemaRegistryClient(
-      List(config.url).asJava,
+      List(config.srUrl).asJava,
       idMapCapacity,
       providers,
-      config.asMap.asJava
+      config.srPropsMap
     )
 
   def register(
@@ -69,6 +55,11 @@ case class SrRestClient(config: SrRestConfig) extends LogSupport {
   def deleteSubject(subject: String): Either[Throwable, util.List[Integer]] =
     Try(schemaRegistryClient.deleteSubject(subject, false)).flatMap { _ =>
       Try(schemaRegistryClient.deleteSubject(subject, true))
+    }.toEither
+
+  def deleteVersion(subject: String, version: String): Either[Throwable, Integer] =
+    Try(schemaRegistryClient.deleteSchemaVersion(subject, version, false)).flatMap { _ =>
+      Try(schemaRegistryClient.deleteSchemaVersion(subject, version, true))
     }.toEither
 
   def registerSchemaFromResource(

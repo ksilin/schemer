@@ -1,6 +1,6 @@
 package com.example.avro.ref
 
-import com.example.{ KafkaSpecHelper, LocalSchemaCoordinates, SpecBase }
+import com.example.{ KafkaSpecHelper, LocalSchemaCoordinates, SRBase, SpecBase }
 import com.examples.schema.{ Customer, Order, Product }
 import io.confluent.kafka.schemaregistry.client.rest.entities.SchemaReference
 import org.apache.avro.Schema
@@ -9,7 +9,7 @@ import org.apache.kafka.clients.producer._
 
 import scala.jdk.CollectionConverters._
 
-class AvroSchemaProductTypeSpec extends SpecBase {
+class AvroSchemaProductTypeSpec extends SpecBase with SRBase {
 
   // avrohugger inlines the referenced schemas
   // object Order {
@@ -35,11 +35,15 @@ class AvroSchemaProductTypeSpec extends SpecBase {
   // val orderSubject    = s"order-$suiteName"
   val orderSubject: String = s"$topicName-value"
 
-  val customerSchemaCoord = LocalSchemaCoordinates(customerSchemaPath, customerSubject)
-  val productSchemaCoord  = LocalSchemaCoordinates(productSchemaPath, productSubject)
-  val orderSchemaCoord    = LocalSchemaCoordinates(orderSchemaPath, orderSubject)
-  val schemasToDelete     = List(customerSchemaCoord, productSchemaCoord, orderSchemaCoord)
-  val schemasToRegister   = List(customerSchemaCoord, productSchemaCoord)
+  val customerSchemaCoord: LocalSchemaCoordinates =
+    LocalSchemaCoordinates(customerSchemaPath, customerSubject)
+  val productSchemaCoord: LocalSchemaCoordinates =
+    LocalSchemaCoordinates(productSchemaPath, productSubject)
+  val orderSchemaCoord: LocalSchemaCoordinates =
+    LocalSchemaCoordinates(orderSchemaPath, orderSubject)
+  val schemasToDelete: List[LocalSchemaCoordinates] =
+    List(customerSchemaCoord, productSchemaCoord, orderSchemaCoord)
+  val schemasToRegister = List(customerSchemaCoord, productSchemaCoord)
 
   val producer: Producer[String, Order] = new KafkaProducer[String, Order](props)
   val consumer: Consumer[String, Order] = new KafkaConsumer[String, Order](props)
@@ -71,7 +75,7 @@ class AvroSchemaProductTypeSpec extends SpecBase {
     )
     orderSchemaRegistered mustBe a[Right[String, Int]]
 
-    val id                  = orderSchemaRegistered.right.get
+    val id                  = orderSchemaRegistered.getOrElse(-1)
     val orderSchema: Schema = srClient.schemaRegistryClient.getById(id)
     info("order schema from SR: ")
     info(orderSchema)

@@ -21,7 +21,7 @@ import scala.util.Try
 object KafkaSpecHelper extends LogSupport with FutureConverter {
 
   val metadataWait             = 2000
-  val defulatReplicationFactor = 3 // 3 for cloud, 1 for local would make sense
+  val defaultReplicationFactor = 3 // 3 for cloud, 1 for local would make sense
 
   def createTopic(
       adminClient: AdminClient,

@@ -1,7 +1,5 @@
 package com.example
 
-import com.example.avro.{ SrRestClient, SrRestConfig }
-import com.example.sr.CloudProps
 import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig
 import org.apache.kafka.clients.admin.AdminClient
 import org.apache.kafka.clients.consumer.ConsumerConfig
@@ -13,8 +11,6 @@ import wvlet.log.LogSupport
 
 import java.util.Properties
 
-case class LocalSchemaCoordinates(schemaPath: String, subject: String)
-
 class SpecBase
     extends AnyFreeSpec
     with Matchers
@@ -25,10 +21,6 @@ class SpecBase
   val cloudProps: CloudProps = CloudProps.create()
 
   val adminClient: AdminClient = AdminClient.create(cloudProps.commonProps)
-
-  val srConfig: SrRestConfig =
-    SrRestConfig(cloudProps.srUrl, s"${cloudProps.srKey}:${cloudProps.srSecret}")
-  val srClient: SrRestClient = SrRestClient(srConfig)
 
   val props: Properties = cloudProps.commonProps.clone().asInstanceOf[Properties]
 
@@ -68,18 +60,4 @@ class SpecBase
     ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,
     "earliest"
   )
-
-  def prepSchemas(
-      schemasToDelete: List[LocalSchemaCoordinates],
-      schemasToRegister: List[LocalSchemaCoordinates]
-  ): List[(LocalSchemaCoordinates, Either[String, Int])] = {
-    srClient.deleteSubjects(schemasToDelete.map(_.subject))
-
-    schemasToRegister map { s =>
-      val schemaRegistered: Either[String, Int] =
-        srClient.registerSchemaFromResource(s.schemaPath, s.subject)
-      schemaRegistered mustBe a[Right[String, Int]]
-      s -> schemaRegistered
-    }
-  }
 }

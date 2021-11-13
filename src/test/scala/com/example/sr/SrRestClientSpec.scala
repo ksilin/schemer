@@ -1,6 +1,6 @@
 package com.example.sr
 
-import com.example.SpecBase
+import com.example.{ SRBase, SpecBase }
 
 import scala.jdk.CollectionConverters._
 import better.files._
@@ -9,7 +9,7 @@ import io.confluent.kafka.schemaregistry.client.rest.entities.SchemaReference
 
 import scala.util.Try
 
-class SrRestClientSpec extends SpecBase {
+class SrRestClientSpec extends SpecBase with SRBase {
 
   val customerSchemaPath = "avro/Customer.avsc"
   val productSchemaPath  = "avro/Product.avsc"
@@ -54,7 +54,7 @@ class SrRestClientSpec extends SpecBase {
 
     val productSchemaRegistered: Either[String, Int] =
       srClient.registerSchemaFromResource(productSchemaPath, productSubject)
-    productSchemaRegistered mustBe a[Right[String, Int]]
+    productSchemaRegistered mustBe a[Right[_, _]]
 
     // without the references:
     // FAILs [ERROR] [AvroSchemaProvider] - Could not parse Avro schema
