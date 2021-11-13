@@ -82,15 +82,47 @@ class AvroSchemaEnumCompatSpec extends SpecBase with SRBase {
     // clubs is element Nr 4
     val symbolClubs: EnumSymbol =
       new EnumSymbol(fourElementsEnumSchema, Suit4.CLUBS)
-    val record = new GenericRecordBuilder(recordSchemaFourEnum).set(fieldName, symbolClubs).build()
 
-    val serialized: Array[Byte] = serializer.serialize(subject, record, recordAvroSchemaFourEnum)
+    val recordClubs =
+      new GenericRecordBuilder(recordSchemaFourEnum).set(fieldName, symbolClubs).build()
+    val serializedClubs: Array[Byte] =
+      serializer.serialize(subject, recordClubs, recordAvroSchemaFourEnum)
+
+    "serialization stores index of enum" in {
+
+      println(s"serialized Clubs ${serializedClubs.mkString("(", ",", ")")}")
+
+      val symbolHearts: EnumSymbol =
+        new EnumSymbol(fourElementsEnumSchema, Suit4.HEARTS)
+      val recordHearts =
+        new GenericRecordBuilder(recordSchemaFourEnum).set(fieldName, symbolHearts).build()
+      val serializedHearts: Array[Byte] =
+        serializer.serialize(subject, recordHearts, recordAvroSchemaFourEnum)
+      println(s"serialized Hearts ${serializedHearts.mkString("(", ",", ")")}")
+
+      val symbolDiamonds: EnumSymbol =
+        new EnumSymbol(fourElementsEnumSchema, Suit4.DIAMONDS)
+      val recordDiamonds =
+        new GenericRecordBuilder(recordSchemaFourEnum).set(fieldName, symbolDiamonds).build()
+      val serializedDiamonds: Array[Byte] =
+        serializer.serialize(subject, recordDiamonds, recordAvroSchemaFourEnum)
+      println(s"serialized Diamonds ${serializedDiamonds.mkString("(", ",", ")")}")
+
+      val symbolSpades: EnumSymbol =
+        new EnumSymbol(fourElementsEnumSchema, Suit4.SPADES)
+      val recordSpades =
+        new GenericRecordBuilder(recordSchemaFourEnum).set(fieldName, symbolSpades).build()
+      val serializedSpades: Array[Byte] =
+        serializer.serialize(subject, recordSpades, recordAvroSchemaFourEnum)
+      println(s"serialized Spades ${serializedSpades.mkString("(", ",", ")")}")
+
+    }
 
     "serializing & deserializing must work with same schema" in {
 
       val deserializedSameSchema: Record =
         deserializer
-          .deserialize("useless_string_will_be_dropped", serialized, recordSchemaFourEnum)
+          .deserialize("useless_string_will_be_dropped", serializedClubs, recordSchemaFourEnum)
           .asInstanceOf[Record]
       val enField: EnumSymbol = deserializedSameSchema.get(fieldName).asInstanceOf[EnumSymbol]
       Suit4.valueOf(enField.toString) mustBe Suit4.CLUBS
@@ -101,7 +133,7 @@ class AvroSchemaEnumCompatSpec extends SpecBase with SRBase {
         deserializer
           .deserialize(
             "useless_string_will_be_dropped",
-            serialized,
+            serializedClubs,
             recordSchemaReverseEnum
           )
           .asInstanceOf[Record]
@@ -114,7 +146,7 @@ class AvroSchemaEnumCompatSpec extends SpecBase with SRBase {
         intercept[SerializationException] {
           deserializer.deserialize(
             "useless_string_will_be_dropped",
-            serialized,
+            serializedClubs,
             recordSchemaThreeEnum
           )
         }
@@ -128,7 +160,7 @@ class AvroSchemaEnumCompatSpec extends SpecBase with SRBase {
         deserializer
           .deserialize(
             "useless_string_will_be_dropped",
-            serialized,
+            serializedClubs,
             recordSchemaThreeEnumWithDefault
           )
           .asInstanceOf[Record]
