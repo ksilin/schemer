@@ -75,9 +75,6 @@ class SchemaEvolutionForwardCompatSpec extends SpecBase with SRBase {
       product_description = None
     )
 
-  @Override
-  def beforeEach(): Unit = {}
-
   "adding mandatory field" - {
 
     srClient.deleteSubject(subjectName)
@@ -156,6 +153,7 @@ class SchemaEvolutionForwardCompatSpec extends SpecBase with SRBase {
       records.size mustBe 2
     }
 
+    // TODO - this is wrong, only a casting issue due to naming - need to address
     "added optional field required on old records by NEW CONSUMER -> breaks on old records without added field" in {
 
       productWithOptDescriptionConsumer.subscribe(List(topicName).asJava)
