@@ -7,8 +7,10 @@ import org.apache.avro.Schema
 import org.apache.kafka.clients.consumer.{ Consumer, ConsumerRecord, KafkaConsumer }
 import org.apache.kafka.clients.producer._
 
+import java.util.Properties
 import scala.jdk.CollectionConverters._
 
+// product type is simple - both referenced schemas as separate fields
 class AvroSchemaProductTypeSpec extends SpecBase with SRBase {
 
   // avrohugger inlines the referenced schemas
@@ -16,7 +18,7 @@ class AvroSchemaProductTypeSpec extends SpecBase with SRBase {
   //  val SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"Order\",\"namespace\":\"com.examples.schema\",\"fields\":[{\"name\":\"customer\",\"type\":{\"type\":\"record\",\"name\":\"Customer\",\"fields\":[{\"name\":\"customer_id\",\"type\":\"int\"},{\"name\":\"customer_name\",\"type\":\"string\"},{\"name\":\"customer_email\",\"type\":\"string\"},{\"name\":\"customer_address\",\"type\":\"string\"}]}},{\"name\":\"product\",\"type\":{\"type\":\"record\",\"name\":\"Product\",\"fields\":[{\"name\":\"product_id\",\"type\":\"int\"},{\"name\":\"product_name\",\"type\":\"string\"},{\"name\":\"product_price\",\"type\":\"double\"}]}}]}")
   // }
 
-  // replacing teh schema by a non-inlined one does not work:
+  // replacing the schema by a non-inlined one does not work:
   // val SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"namespace\":\"com.examples.schema\",\"name\":\"Order\",\"fields\":[{\"name\":\"customer\",\"type\":\"com.examples.schema.Customer\"},{\"name\":\"product\",\"type\":\"com.examples.schema.Product\"}]}")
   // java.lang.ExceptionInInitializerError
   //	at com.examples.schema.Order.getSchema(Order.scala:31)
@@ -45,8 +47,11 @@ class AvroSchemaProductTypeSpec extends SpecBase with SRBase {
     List(customerSchemaCoord, productSchemaCoord, orderSchemaCoord)
   val schemasToRegister = List(customerSchemaCoord, productSchemaCoord)
 
-  val producer: Producer[String, Order] = new KafkaProducer[String, Order](props)
-  val consumer: Consumer[String, Order] = new KafkaConsumer[String, Order](props)
+  val propsWithSr: Properties = props.clone().asInstanceOf[Properties]
+  propsWithSr.putAll(srConfig.srPropsMap)
+
+  val producer: Producer[String, Order] = new KafkaProducer[String, Order](propsWithSr)
+  val consumer: Consumer[String, Order] = new KafkaConsumer[String, Order](propsWithSr)
   consumer.subscribe(List(topicName).asJava)
 
   val product: Product = Product(product_id = 1, product_name = "myProduct", product_price = 12.99)

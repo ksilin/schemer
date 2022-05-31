@@ -10,6 +10,21 @@ Sbt Avro Hugger is responsible for this task. It is integrated into the build, s
 
 Otherwise, call `avroScalaGenerateSpecific`
 
+## existing tests
+
+### Schema references, sum & product types
+
+* AvroSchemaProductTypeSpec
+
+a product type is rather easy - using/referencing other types as fields. In this case an `Order`
+ consists of a `Customer` and a `Product`
+
+* AvroSchemaSumTypeSpec
+
+Sum types are more involved. Would prob model them as an Either is just two types or an Enumeration if more. 
+
+Avrohugger cannot generate a SpecificRecord for the AllOF type and fails, so using GenericRecord here
+
 ## TODOs
 
 * try kafka-serialization wrappers

@@ -9,6 +9,7 @@ import org.apache.avro.generic.{ GenericData, GenericRecord, GenericRecordBuilde
 import org.apache.kafka.clients.consumer.{ Consumer, ConsumerRecord, KafkaConsumer }
 import org.apache.kafka.clients.producer.{ KafkaProducer, Producer, ProducerRecord, RecordMetadata }
 
+import java.util.Properties
 import scala.jdk.CollectionConverters._
 
 class AvroSchemaSumTypeGenericRecordSpec extends SpecBase with SRBase {
@@ -38,10 +39,15 @@ class AvroSchemaSumTypeGenericRecordSpec extends SpecBase with SRBase {
   val schemasToDelete   = List(customerSchemaCoord, productSchemaCoord, customerOrProductSchemaCoord)
   val schemasToRegister = List(customerSchemaCoord, productSchemaCoord)
 
+  val propsWithSr: Properties = props.clone().asInstanceOf[Properties]
+  propsWithSr.putAll(srConfig.srPropsMap)
+
   val producerSumType: Producer[String, CustomerOrProductCase] =
-    new KafkaProducer[String, CustomerOrProductCase](props)
-  val producer: Producer[String, GenericRecord] = new KafkaProducer[String, GenericRecord](props)
-  val consumer: Consumer[String, GenericRecord] = new KafkaConsumer[String, GenericRecord](props)
+    new KafkaProducer[String, CustomerOrProductCase](propsWithSr)
+  val producer: Producer[String, GenericRecord] =
+    new KafkaProducer[String, GenericRecord](propsWithSr)
+  val consumer: Consumer[String, GenericRecord] =
+    new KafkaConsumer[String, GenericRecord](propsWithSr)
 
   val product: Product = Product(product_id = 1, product_name = "myProduct", product_price = 12.99)
   val customer: Customer = Customer(
