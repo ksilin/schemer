@@ -18,7 +18,7 @@ class SpecBase
     with FutureConverter
     with LogSupport {
 
-  val cloudProps: CloudProps = CloudProps.create()
+  val cloudProps: CCloudClientProps = CCloudClientProps.create()
 
   val adminClient: AdminClient = AdminClient.create(cloudProps.commonProps)
 

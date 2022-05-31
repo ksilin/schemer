@@ -16,7 +16,11 @@ Otherwise, call `avroScalaGenerateSpecific`
 
 https://github.com/ovotech/kafka-serialization
 
-* 
+* try Avro IDL
+
+https://avro.apache.org/docs/current/idl.html
+
+* custom deserializer, wrapping GenericRecord
 
 ## Contribution policy ##
 

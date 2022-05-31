@@ -144,7 +144,10 @@ object KafkaSpecHelper extends LogSupport with FutureConverter {
   def fetchAndProcessRecords[K, V](
       consumer: Consumer[K, V],
       process: ConsumerRecord[K, V] => Unit = { r: ConsumerRecord[K, V] =>
-        info(s"${r.topic()} | ${r.partition()} | ${r.offset()}: ${r.key()} | ${r.value()}")
+        info(
+          s"${r.topic()} | ${r.partition()} | ${r.offset()} : ${r.value().getClass} | ${r
+            .key()} | ${r.value()}"
+        )
       },
       filter: ConsumerRecord[K, V] => Boolean = { _: ConsumerRecord[K, V] => true },
       abortOnFirstRecord: Boolean = true,
