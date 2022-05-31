@@ -87,7 +87,7 @@ lazy val library =
 lazy val commonSettings =
   Seq(
     scalaVersion := "2.13.3",
-    organization := "default",
+    organization := "example.com",
     organizationName := "konstantin.silin",
     startYear := Some(2020),
     licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),

@@ -8,27 +8,27 @@ import org.apache.kafka.common.config.{ SaslConfigs, SslConfigs }
 import java.net.URL
 import java.util.Properties
 
-case class CloudProps(
-    bootstrapBroker: String,
+case class CCloudClientProps(
+    bootstrapServer: String,
     apiKey: String,
     apiSecret: String
 ) {
 
   val commonProps: Properties = new Properties()
-  commonProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapBroker)
+  commonProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServer)
   commonProps.put(SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG, "https")
   commonProps.setProperty(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_SSL")
   commonProps.put(SaslConfigs.SASL_MECHANISM, "PLAIN")
 
   val saslString: String =
     s"""org.apache.kafka.common.security.plain.PlainLoginModule required username="${apiKey}" password="${apiSecret}";""".stripMargin
-  commonProps.setProperty("sasl.jaas.config", saslString)
+  commonProps.setProperty(SaslConfigs.SASL_JAAS_CONFIG, saslString)
 }
 
-case object CloudProps {
-  def create(configFileUrl: Option[URL] = None): CloudProps = {
+case object CCloudClientProps {
+  def create(configFileUrl: Option[URL] = None): CCloudClientProps = {
     val config = configFileUrl.fold(ConfigFactory.load())(ConfigFactory.parseURL)
-    CloudProps(
+    CCloudClientProps(
       config.getString("cluster.bootstrap"),
       config.getString("cluster.key"),
       config.getString("cluster.secret")

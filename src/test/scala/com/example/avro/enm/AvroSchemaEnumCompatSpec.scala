@@ -16,7 +16,7 @@ import scala.jdk.CollectionConverters._
 class AvroSchemaEnumCompatSpec extends SpecBase with SRBase {
 
   // we recommend against changing enums, explaining that this change is incompatible
-  // it is not that clear-cut. There are some compatible changes, some incompatible changes and some gres area
+  // it is not that clear-cut. There are some compatible changes, some incompatible changes and some grey area
   // however, as it is that complicated, you probably do not want to change your enums
 
   val subject: String = suiteName
@@ -155,7 +155,8 @@ class AvroSchemaEnumCompatSpec extends SpecBase with SRBase {
       cause.getMessage mustBe "No match for CLUBS"
     }
 
-    "deserializing will use default value if symbol is removed but a default exists" in {
+    // fails with org.apache.avro.AvroTypeException: No match for CLUBS
+    "deserializing must use default value if symbol is removed but a default exists" in {
       val deserializedThreeSchema =
         deserializer
           .deserialize(
@@ -188,16 +189,22 @@ class AvroSchemaEnumCompatSpec extends SpecBase with SRBase {
       res2.isEmpty mustBe true
     }
 
-    "with defaults, removing elements must be backwards compatible " in {
+    "with defaults, removing and adding elements must be compatible" in {
 
       val result: mutable.Buffer[String] =
         threeElementsWithDefaultEnumAvroSchema
           .isBackwardCompatible(fourElementsEnumAvroSchema)
           .asScala
       result.isEmpty mustBe true
+
+      val result2: mutable.Buffer[String] =
+        fourElementsEnumAvroSchema
+          .isBackwardCompatible(threeElementsWithDefaultEnumAvroSchema)
+          .asScala
+      result2.isEmpty mustBe true
     }
 
-    // you dont even need the defaults, but just to be sure
+    // you don't even need the defaults, but just to be sure
     "with defaults, adding elements must be backwards compatible " in {
       val result: mutable.Buffer[String] =
         fourElementsEnumAvroSchema

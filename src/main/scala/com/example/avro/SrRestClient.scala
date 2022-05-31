@@ -75,7 +75,9 @@ case class SrRestClient(config: SrRestProps) extends LogSupport {
     schemaRegistered
   }
 
-  // schemaRegistryClient.register(subjectName, parsedSchema)
+  def setCompat(subject: String, compat: String): Either[Throwable, String] =
+    Try(schemaRegistryClient.updateCompatibility(subject, compat)).toEither
+
 }
 
 case object SrRestClient {

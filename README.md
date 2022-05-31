@@ -1,6 +1,14 @@
 # schemer #
 
-Welcome to schemer!
+Welcome to schemer! Here, I am trying some schema related tricks.
+
+## tests
+
+## generating classes from Avro /.avsc
+
+Sbt Avro Hugger is responsible for this task. It is integrated into the build, so calling `compile` will also generate the case classes. 
+
+Otherwise, call `avroScalaGenerateSpecific`
 
 ## TODOs
 
