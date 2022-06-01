@@ -28,7 +28,10 @@ class CustomDeserializerSpec extends SpecBase with SRBase {
   val productProducer: Producer[String, Product] = new KafkaProducer[String, Product](propsWithSr)
 
   // THIS!
-  propsWithSr.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, classOf[CustomProductDeserializer])
+  propsWithSr.put(
+    ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
+    classOf[CustomProductDeserializer]
+  )
 
   val genericProductConsumer: Consumer[String, Product] =
     new KafkaConsumer[String, Product](propsWithSr)
