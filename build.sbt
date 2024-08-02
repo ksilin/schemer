@@ -44,17 +44,17 @@ lazy val schemer =
 lazy val library =
   new {
     object Version {
-      val kafka       = "3.0.0"
-      val cp          = "6.2.1"
+      val kafka       = "3.7.1"
+      val cp          = "7.6.2"
       val circe       = "0.13.0"
       val avro4s      = "4.0.4"
       val avroCompat  = "2.2.0"
       val sttp        = "3.3.13"
-      val betterFiles = "3.9.1"
-      val config      = "1.4.1"
-      val airframeLog = "20.12.1"
-      val scalatest   = "3.2.0"
-      val logback     = "1.2.3"
+      val betterFiles = "3.9.2"
+      val config      = "1.4.3"
+      val airframeLog = "24.7.1"
+      val scalatest   = "3.2.19"
+      val logback     = "1.2.13"
     }
     val clients             = "org.apache.kafka"               % "kafka-clients"                % Version.kafka
     val kafka               = "org.apache.kafka"              %% "kafka"                        % Version.kafka
@@ -63,7 +63,7 @@ lazy val library =
     val srClient            = "io.confluent"                   % "kafka-schema-registry-client" % Version.cp
     val jsonSchemaProvider  = "io.confluent"                   % "kafka-json-schema-provider"   % Version.cp
     val protoSchemaProvider = "io.confluent"                   % "kafka-protobuf-provider"      % Version.cp
-    val protobuf            = "com.google.protobuf"            % "protobuf-java"                % "3.12.2"
+    val protobuf            = "com.google.protobuf"            % "protobuf-java"                % "3.12.4"
     val sttp                = "com.softwaremill.sttp.client3" %% "core"                         % Version.sttp
     val sttpBackendOkHttp   = "com.softwaremill.sttp.client3" %% "okhttp-backend"               % Version.sttp
     val sttpCirce           = "com.softwaremill.sttp.client3" %% "circe"                        % Version.sttp
@@ -71,7 +71,7 @@ lazy val library =
     val circeParser         = "io.circe"                      %% "circe-parser"                 % Version.circe
     val avro4s              = "com.sksamuel.avro4s"           %% "avro4s-core"                  % Version.avro4s
     val avro4sKafka         = "com.sksamuel.avro4s"           %% "avro4s-kafka"                 % Version.avro4s
-    val scalaPB             = "com.thesamet.scalapb"          %% "compilerplugin"               % "0.10.8"
+    val scalaPB             = "com.thesamet.scalapb"          %% "compilerplugin"               % "0.11.17"
     val betterFiles         = "com.github.pathikrit"          %% "better-files"                 % Version.betterFiles
     val config              = "com.typesafe"                   % "config"                       % Version.config
     val airframeLog         = "org.wvlet.airframe"            %% "airframe-log"                 % Version.airframeLog
@@ -86,7 +86,7 @@ lazy val library =
 
 lazy val commonSettings =
   Seq(
-    scalaVersion := "2.13.3",
+    scalaVersion := "2.13.14",
     organization := "example.com",
     organizationName := "konstantin.silin",
     startYear := Some(2020),

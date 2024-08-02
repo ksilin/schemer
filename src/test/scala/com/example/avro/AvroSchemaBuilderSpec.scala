@@ -1,6 +1,6 @@
 package com.example.avro
 
-import com.example.{ SRBase, SpecBase }
+import com.example.util.{ SRBase, SpecBase }
 import io.confluent.kafka.schemaregistry.CompatibilityLevel
 import io.confluent.kafka.schemaregistry.avro.AvroSchema
 import org.apache.avro.{ Schema, SchemaBuilder }

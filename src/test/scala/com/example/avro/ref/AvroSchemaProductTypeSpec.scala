@@ -1,6 +1,6 @@
 package com.example.avro.ref
 
-import com.example.{ KafkaSpecHelper, LocalSchemaCoordinates, SRBase, SpecBase }
+import com.example.util.{ KafkaSpecHelper, LocalSchemaCoordinates, SRBase, SpecBase }
 import com.examples.schema.{ Customer, Order, Product }
 import io.confluent.kafka.schemaregistry.client.rest.entities.SchemaReference
 import org.apache.avro.Schema

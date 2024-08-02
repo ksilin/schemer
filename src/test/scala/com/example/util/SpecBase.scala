@@ -1,5 +1,6 @@
-package com.example
+package com.example.util
 
+import com.example.{ CCloudClientProps, FutureConverter }
 import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig
 import org.apache.kafka.clients.admin.AdminClient
 import org.apache.kafka.clients.consumer.ConsumerConfig

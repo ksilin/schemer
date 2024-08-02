@@ -5,7 +5,7 @@ import com.example.avro.specificrecords.{
   ProductWithDescription,
   ProductWithOptionalDescription
 }
-import com.example.{ KafkaSpecHelper, SRBase, SpecBase }
+import com.example.util.{ KafkaSpecHelper, SRBase, SpecBase }
 import io.confluent.kafka.serializers.{
   AbstractKafkaSchemaSerDeConfig,
   KafkaAvroDeserializerConfig

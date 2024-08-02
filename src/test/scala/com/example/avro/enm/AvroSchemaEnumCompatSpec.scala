@@ -1,7 +1,8 @@
 package com.example.avro.enm
 
 import com.example.avro.enm.Enums.Suit4
-import com.example.{ SRBase, SpecBase }
+import com.example.avro.enm.SchemaStringUtils.makeSingleFieldSchemaString
+import com.example.util.{ SRBase, SpecBase }
 import io.confluent.kafka.schemaregistry.avro.AvroSchema
 import io.confluent.kafka.schemaregistry.client.MockSchemaRegistryClient
 import io.confluent.kafka.serializers.KafkaAvroDeserializer
@@ -38,14 +39,7 @@ class AvroSchemaEnumCompatSpec extends SpecBase with SRBase {
 
   // fun quiz question - what is the return type of a method called isBackwardCompatible(ParsedSchema previousSchema)?
   // Boolean? wrong! its List<String>
-
   private val fieldName = "enumTest"
-  val recordPrefix: String =
-    "{ \"type\": \"record\",\r\n \"name\": \"" + fieldName + "\",\r\n \"namespace\": \"com.example\", \r\n \"fields\": [\r\n"
-  val recordSuffix = "\n]\n}"
-
-  val fieldPrefix: String = "{\"name\": \"" + fieldName + "\",\r\n \"type\": "
-  val fieldSuffix         = "}"
 
   val fourElementsEnumSchema: Schema        = new Schema.Parser().parse(fourEnumSchemaString)
   val fourElementsReverseEnumSchema: Schema = new Schema.Parser().parse(fourEnumReverseSchemaString)
@@ -67,17 +61,22 @@ class AvroSchemaEnumCompatSpec extends SpecBase with SRBase {
     val deserializer = new KafkaAvroDeserializer(mockSRClient)
 
     val recordSchemaFourEnum: Schema =
-      new Schema.Parser().parse(makeSchemaString(fourEnumSchemaString))
+      new Schema.Parser()
+        .parse(makeSingleFieldSchemaString(fieldName, fieldName, fourEnumSchemaString))
+
     val recordAvroSchemaFourEnum = new AvroSchema(recordSchemaFourEnum)
 
     val recordSchemaThreeEnum: Schema =
-      new Schema.Parser().parse(makeSchemaString(threeEnumSchemaString))
+      new Schema.Parser()
+        .parse(makeSingleFieldSchemaString(fieldName, fieldName, threeEnumSchemaString))
 
     val recordSchemaThreeEnumWithDefault: Schema =
-      new Schema.Parser().parse(makeSchemaString(threeEnumWithDefaultSchemaString))
+      new Schema.Parser()
+        .parse(makeSingleFieldSchemaString(fieldName, fieldName, threeEnumWithDefaultSchemaString))
 
     val recordSchemaReverseEnum: Schema =
-      new Schema.Parser().parse(makeSchemaString(fourEnumReverseSchemaString))
+      new Schema.Parser()
+        .parse(makeSingleFieldSchemaString(fieldName, fieldName, fourEnumReverseSchemaString))
 
     // clubs is element Nr 4
     val symbolClubs: EnumSymbol =
@@ -229,8 +228,5 @@ class AvroSchemaEnumCompatSpec extends SpecBase with SRBase {
       result.head.contains("MISSING_ENUM_SYMBOLS") mustBe true
     }
   }
-
-  private def makeSchemaString(fieldSchema: String) =
-    recordPrefix + fieldPrefix + fieldSchema + fieldSuffix + recordSuffix
 
 }

@@ -1,9 +1,8 @@
 package com.example.sr
 
-import com.example.{ SRBase, SpecBase }
-
 import scala.jdk.CollectionConverters._
 import better.files._
+import com.example.util.{ SRBase, SpecBase }
 import io.confluent.kafka.schemaregistry.ParsedSchema
 import io.confluent.kafka.schemaregistry.client.rest.entities.SchemaReference
 

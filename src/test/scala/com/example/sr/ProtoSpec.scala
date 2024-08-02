@@ -3,7 +3,7 @@ package com.example.sr
 import java.util.Properties
 import com.acme.Myrecord.MyRecord
 import com.acme.Other.OtherRecord
-import com.example.{ KafkaSpecHelper, SpecBase }
+import com.example.util.{ KafkaSpecHelper, SpecBase }
 import org.apache.kafka.clients.consumer.{ Consumer, ConsumerConfig, ConsumerRecord, KafkaConsumer }
 import org.apache.kafka.clients.producer.{
   KafkaProducer,

@@ -1,6 +1,6 @@
 package com.example.avro
 
-import com.example.{ SRBase, SpecBase }
+import com.example.util.{ SRBase, SpecBase }
 import com.hotels.avro.compatibility.Compatibility.CheckType
 import com.hotels.avro.compatibility.{ Compatibility, CompatibilityCheckResult }
 import org.apache.avro.SchemaCompatibility.{ SchemaCompatibilityType, SchemaIncompatibilityType }

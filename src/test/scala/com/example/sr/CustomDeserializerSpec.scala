@@ -1,7 +1,7 @@
 package com.example.sr
 
 import com.example.avro.specificrecords.Product
-import com.example.{ KafkaSpecHelper, SRBase, SpecBase }
+import com.example.util.{ KafkaSpecHelper, SRBase, SpecBase }
 import io.confluent.kafka.serializers.{
   AbstractKafkaSchemaSerDeConfig,
   KafkaAvroDeserializerConfig

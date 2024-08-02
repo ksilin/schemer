@@ -1,7 +1,7 @@
 package com.example.sr
 
 import com.example.avro.specificrecords.Product
-import com.example.{ KafkaSpecHelper, SpecBase }
+import com.example.util.{ KafkaSpecHelper, SpecBase }
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient
 import io.confluent.kafka.schemaregistry.testutil.MockSchemaRegistry
 import io.confluent.kafka.serializers.{

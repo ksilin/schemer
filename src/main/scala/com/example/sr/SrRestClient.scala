@@ -1,30 +1,33 @@
-package com.example.avro
+package com.example.sr
 
 import better.files.Resource
-import com.example.SrRestProps
-import io.confluent.kafka.schemaregistry.{ ParsedSchema, SchemaProvider }
+import com.typesafe.config.Config
 import io.confluent.kafka.schemaregistry.avro.{ AvroSchema, AvroSchemaProvider }
-import io.confluent.kafka.schemaregistry.client.{ CachedSchemaRegistryClient, SchemaRegistryClient }
 import io.confluent.kafka.schemaregistry.client.rest.entities.SchemaReference
+import io.confluent.kafka.schemaregistry.client.{
+  CachedSchemaRegistryClient,
+  MockSchemaRegistryClient,
+  SchemaRegistryClient
+}
 import io.confluent.kafka.schemaregistry.json.JsonSchemaProvider
 import io.confluent.kafka.schemaregistry.protobuf.ProtobufSchemaProvider
+import io.confluent.kafka.schemaregistry.{ ParsedSchema, SchemaProvider }
 import wvlet.log.LogSupport
 
+import java.net.URL
 import java.util
 import scala.jdk.CollectionConverters._
-import scala.jdk.OptionConverters.RichOptional
+import scala.jdk.OptionConverters._
 import scala.util.Try
 
-case class SrRestClient(config: SrRestProps) extends LogSupport {
-  import com.example.avro.SrRestClient._
+case class SrRestClient(schemaRegistryClient: SchemaRegistryClient) extends LogSupport {
 
-  val schemaRegistryClient: SchemaRegistryClient =
-    new CachedSchemaRegistryClient(
-      List(config.srUrl).asJava,
-      idMapCapacity,
-      providers,
-      config.srPropsMap
-    )
+  def getSchema(
+      subjectName: String,
+      lookupDeleted: Boolean = false,
+      latestOnly: Boolean = false
+  ): Seq[ParsedSchema] =
+    schemaRegistryClient.getSchemas(subjectName, lookupDeleted, latestOnly).asScala.toSeq
 
   def register(
       subjectName: String,
@@ -90,5 +93,31 @@ case object SrRestClient {
     ).asJava
 
   val idMapCapacity = 10
+
+  def create(configFileUrl: Option[URL] = None, configPath: Option[String] = None): SrRestClient = {
+    val srRestProps = SrRestProps.create(configFileUrl, configPath)
+    fromSrRestProps(srRestProps)
+  }
+
+  def fromConfig(config: Config): SrRestClient = {
+    val srRestProps = SrRestProps.fromConfig(config)
+    fromSrRestProps(srRestProps)
+  }
+
+  def fromSrRestProps(config: SrRestProps): SrRestClient = {
+
+    val schemaRegistryClient: SchemaRegistryClient =
+      if (config.srUrl.startsWith("mock"))
+        new MockSchemaRegistryClient()
+      // with scope, use this: MockSchemaRegistry.getClientForScope(SCHEMA_REGISTRY_SCOPE)
+      else
+        new CachedSchemaRegistryClient(
+          List(config.srUrl).asJava,
+          idMapCapacity,
+          providers,
+          config.srPropsMap
+        )
+    SrRestClient(schemaRegistryClient)
+  }
 
 }
